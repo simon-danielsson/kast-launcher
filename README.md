@@ -15,7 +15,7 @@
     <img src="https://img.shields.io/github/v/release/simon-danielsson/kast-launcher?color=blueviolet&style=flat-square" alt="Latest release" />
     <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="MIT License" />
   <img src="https://img.shields.io/badge/Rust-stable-orange?style=flat-square" alt="Rust" />
-  <img src="https://img.shields.io/github/last-commit/simon-danielsson/kast/main?style=flat-square&color=blue" alt="Last commit" />
+  <img src="https://img.shields.io/github/last-commit/simon-danielsson/kast-launcher/main?style=flat-square&color=blue" alt="Last commit" />
 </p>
   
 <p align="center">
