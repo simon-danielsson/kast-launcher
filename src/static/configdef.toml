@@ -35,18 +35,29 @@ timeout = 20
 [[App]]
 name = "Gimp"
 icon = ''
-path = "gimp &"
+path = "gimp"
+
+[[App]]
+name = "Vial"
+icon = ''
+path = "/home/simon/AppImages/Vial-v0.7.5.AppImage"
+
+[[App]]
+name = "Set timer (30 sec)"
+icon = ''
+path = "/home/simon/dotfiles/scripts/timer-30-sec.sh"
 
 [[App]]
 name = "Firefox"
 icon = ''
-path = "/usr/bin/firefox &"
+path = "firefox"
 
 [[App]]
 name = "Alacritty"
 icon = ''
-path = "/usr/bin/alacritty &"
+path = "alacritty"
+
 [[App]]
 name = "Files"
 icon = ''
-path = "pcmanfm &"
+path = "pcmanfm"

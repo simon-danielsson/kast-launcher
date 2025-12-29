@@ -6,19 +6,19 @@ use std::process::{Command, Stdio};
 
 pub fn run(app: App) {
         let dest = app.path;
-        println!("Launching {} with dest '{}'", app.name.as_str(), dest);
+        // println!("Launching {} with dest '{}'", app.name.as_str(), dest);
         if dest.ends_with(".AppImage") {
                 run_appimage(&dest).unwrap();
-                println!("trying to run appimage")
+                // println!("trying to run appimage")
         } else if dest.ends_with(".sh") {
-                run_bash(&dest);
-                println!("trying to run bash script")
+                run_bash(&dest).unwrap();
+                // println!("trying to run bash script")
         } else if dest.ends_with(".desktop") {
                 run_desktop(&dest).unwrap();
-                println!("trying to run .desktop")
+                // println!("trying to run .desktop")
         } else {
                 run_misc(&dest).unwrap();
-                println!("trying to run misc")
+                // println!("trying to run misc")
         }
 }
 
@@ -30,12 +30,13 @@ fn run_misc(dest: &str) -> Result<(), Box<dyn std::error::Error>> {
         Ok(())
 }
 
-fn run_bash(script_path: &str) {
+fn run_bash(dest: &str) -> Result<(), Box<dyn std::error::Error>> {
         let _ = Command::new("bash")
-                .arg(script_path)
+                .arg(dest)
                 .stdout(Stdio::null()) // ignore stdout
                 .stderr(Stdio::null()) // ignore stderr
-                .status(); // we ignore the Result entirely
+                .spawn()?; // launches asynchronously
+        Ok(())
 }
 
 fn run_appimage(app_path: &str) -> Result<(), Box<dyn std::error::Error>> {
