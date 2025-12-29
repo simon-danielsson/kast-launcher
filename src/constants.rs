@@ -1,4 +1,3 @@
-// pub const APP_VER: &str = env!("CARGO_PKG_VERSION");
 pub const APP_NAME: &str = env!("CARGO_PKG_NAME");
 pub const CONF_FILE_DEF: &str = include_str!("static/configdef.toml");
 pub const FALLBACK_FONT_BYTES: &[u8] = include_bytes!("static/0xProtoNerdFontMono.ttf");

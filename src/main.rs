@@ -124,10 +124,7 @@ impl eframe::App for KastLauncherApp {
                 egui::CentralPanel::default().show(ctx, |ui| {
                         let corner_rad = egui::CornerRadius::same(self.config.window.elem_cnr_rad);
                         let available_width = ui.available_width();
-                        let search_bar = egui::Frame::new()
-                                // .inner_margin(Margin::same(5))
-                                // .fill(hex_to_color32(&self.config.colors.accent))
-                                .corner_radius(corner_rad);
+                        let search_bar = egui::Frame::new().corner_radius(corner_rad);
                         let app_list = egui::Frame::new().corner_radius(corner_rad);
 
                         search_bar.show(ui, |ui| {
@@ -156,15 +153,12 @@ impl eframe::App for KastLauncherApp {
                                                         let field = ui.add(
                                                                 TextEdit::singleline(&mut self.search)
                                                                         .font(FontId::new(self.config.font.size, FontFamily::default()))
-                                                                        // .margin(Margin::same(0))
                                                                         .frame(false)
                                                                         .background_color(hex_to_color32(&self.config.colors.accent))
                                                                         .hint_text(
                                                                                 RichText::new(&self.config.misc.search_hint)
                                                                                         .color(hex_to_color32(&self.config.colors.text_aux)),
                                                                         )
-                                                                        // .horizontal_align(Align::Min)
-                                                                        // .vertical_align(Align::Center)
                                                                         .desired_width(available_width),
                                                         );
                                                         if self.search_focus == true {
