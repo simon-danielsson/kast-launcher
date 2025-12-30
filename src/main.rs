@@ -1,6 +1,12 @@
 use eframe::egui::{
-        self, Color32, FontFamily, FontId, Key, RichText, Stroke, TextEdit, style::Selection,
+        self, style::Selection, Color32, FontFamily, FontId, Key, RichText, Stroke, TextEdit,
 };
+
+use std::sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+};
+use std::{thread, time::Duration};
 
 pub mod config;
 pub mod constants;
@@ -15,15 +21,6 @@ fn main() {
         let conf: Config;
         let conf_created: bool;
         (conf, conf_created) = config::import();
-
-        // ==== timeout logic ====
-        if conf.misc.timeout != 0 {
-                let timeout = std::time::Duration::from_secs(conf.misc.timeout);
-                std::thread::spawn(move || {
-                        std::thread::sleep(timeout);
-                        std::process::exit(0);
-                });
-        }
 
         // ==== program ====
         let vp_width = conf.window.width;
@@ -66,7 +63,8 @@ struct KastLauncherApp {
         search_focus: bool,
         sorted_apps: Vec<App>,
         selected_index: usize,
-        fonts_loaded: bool,
+        is_quitting: Arc<AtomicBool>,
+        threads: Vec<std::thread::JoinHandle<()>>,
 }
 
 impl KastLauncherApp {
@@ -80,6 +78,7 @@ impl KastLauncherApp {
                 setup_custom_style(&cc.egui_ctx, &mut config);
                 loadfont::replace_fonts(&cc.egui_ctx, config.font.path.clone());
                 loadfont::add_font(&cc.egui_ctx, config.font.path.clone());
+
                 Self {
                         config,
                         search: String::new(),
@@ -87,54 +86,62 @@ impl KastLauncherApp {
                         search_focus,
                         sorted_apps,
                         selected_index: 0,
-                        fonts_loaded: false,
+                        is_quitting: Arc::new(AtomicBool::new(false)),
+                        threads: vec![],
                 }
+        }
+}
+
+impl KastLauncherApp {
+        fn search_loop(&mut self) {
+                self.sorted_apps.clear();
+                let search_l = self.search.to_lowercase();
+                self.sorted_apps.extend(
+                        self.config
+                                .apps
+                                .iter()
+                                .filter(|app| app.name.to_lowercase().contains(&search_l))
+                                .cloned(),
+                );
+        }
+        fn quit(&mut self) {
+                for handle in self.threads.drain(..) {
+                        let _ = handle.join();
+                }
+                std::process::exit(0);
+        }
+
+        fn input(&mut self, ctx: &egui::Context) {
+                // escape: exit program
+                if ctx.input(|i| i.key_pressed(Key::Escape)) {
+                        self.is_quitting.store(true, Ordering::SeqCst);
+                }
+                // enter: toggle searchbar focus
+                if ctx.input(|i| i.key_pressed(Key::Enter)) {
+                        self.search_focus = false
+                }
+                // x: close popup
+                if ctx.input(|i| i.key_pressed(Key::X)) {
+                        self.conf_created = false;
+                }
+        }
+        fn timeout_logic(&mut self) {
+                let timeout_q = Arc::clone(&self.is_quitting);
+                let timeo = self.config.misc.timeout;
+                let _ = thread::spawn(move || {
+                        thread::sleep(Duration::from_secs(timeo));
+                        timeout_q.store(true, Ordering::SeqCst);
+                });
         }
 }
 
 impl eframe::App for KastLauncherApp {
         fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-                // ==== load fonts ====
-                if !self.fonts_loaded {
-                        self.fonts_loaded = true;
-                        let ctx = ctx.clone();
-                        let path = self.config.font.path.clone();
-                        std::thread::spawn(move || {
-                                loadfont::replace_fonts(&ctx, path.clone());
-                                loadfont::add_font(&ctx, path);
-                                ctx.request_repaint();
-                        });
-                }
-                // ==== search logic ====
-                self.sorted_apps.clear();
-                let search = self.search.to_lowercase();
-                self.sorted_apps.clear();
-                self.sorted_apps.extend(
-                        self.config
-                                .apps
-                                .iter()
-                                .filter(|app| app.name.to_lowercase().contains(&search))
-                                .cloned(),
-                );
+                self.timeout_logic();
+                self.search_loop();
+                self.input(ctx);
 
-                // ==== input handling =====
-
-                // escape = exit program
-                if ctx.input(|i| i.key_pressed(Key::Escape)) {
-                        ctx.send_viewport_cmd(egui::ViewportCommand::Close);
-                        std::process::exit(0);
-                }
-                // enter = toggle searchbar focus
-                if ctx.input(|i| i.key_pressed(Key::Enter)) {
-                        self.search_focus = false
-                }
-                // x = close popup
-                if ctx.input(|i| i.key_pressed(Key::X)) {
-                        self.conf_created = false;
-                }
-
-                // ==== update ui =====
-
+                // ==== ui =====
                 egui::CentralPanel::default().show(ctx, |ui| {
                         let corner_rad = egui::CornerRadius::same(self.config.window.elem_cnr_rad);
                         let available_width = ui.available_width();
@@ -197,10 +204,13 @@ impl eframe::App for KastLauncherApp {
                                         }
 
                                         if i.key_pressed(egui::Key::Enter) || i.key_pressed(egui::Key::Space) {
-                                                let app = &self.sorted_apps[self.selected_index];
-                                                launch_app::run(app.clone());
-                                                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
-                                                std::process::exit(0);
+                                                let app = self.sorted_apps[self.selected_index].clone();
+                                                let app_q = Arc::clone(&self.is_quitting);
+                                                let t_launch_app = thread::spawn(move || {
+                                                        launch_app::run(app);
+                                                        app_q.store(true, Ordering::SeqCst);
+                                                });
+                                                self.threads.push(t_launch_app);
                                         }
                                 });
 
@@ -217,7 +227,7 @@ impl eframe::App for KastLauncherApp {
                                                                 egui::Color32::TRANSPARENT
                                                         };
 
-                                                        let response = ui.allocate_ui_with_layout(
+                                                        let _ = ui.allocate_ui_with_layout(
                                                                 egui::vec2(ui.available_width(), self.config.window.row_height),
                                                                 egui::Layout::left_to_right(egui::Align::Center),
                                                                 |ui| {
@@ -240,15 +250,6 @@ impl eframe::App for KastLauncherApp {
                                                                         )));
                                                                 },
                                                         );
-
-                                                        // Mouse hover/click updates selection
-                                                        if response.response.hovered() {
-                                                                self.selected_index = idx;
-                                                        }
-                                                        if response.response.clicked() {
-                                                                // ACTIVATE APP
-                                                                println!("Clicked: {}", app.name);
-                                                        }
                                                 }
                                         });
                         });
@@ -273,6 +274,10 @@ impl eframe::App for KastLauncherApp {
                                                 });
                                         });
                         };
+
+                        if self.is_quitting.load(Ordering::SeqCst) {
+                                self.quit()
+                        }
                 });
         }
 }

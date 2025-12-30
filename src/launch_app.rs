@@ -7,27 +7,29 @@ use std::process::{Command, Stdio};
 pub fn run(app: App) {
         let dest = app.path;
         if dest.ends_with(".AppImage") {
-                run_appimage(&dest).unwrap();
+                let _ = run_appimage(&dest);
         } else if dest.ends_with(".sh") {
-                run_bash(&dest).unwrap();
+                let _ = run_bash(&dest);
         } else if dest.ends_with(".desktop") {
-                run_desktop(&dest).unwrap();
+                let _ = run_desktop(&dest);
         } else {
-                run_misc(&dest).unwrap();
+                let _ = run_misc(&dest);
         }
 }
 
 fn run_misc(dest: &str) -> Result<(), Box<dyn std::error::Error>> {
-        let _ = Command::new(&dest)
+        let _ = Command::new(dest)
+                .stdin(Stdio::null())
                 .stdout(Stdio::null())
                 .stderr(Stdio::null())
-                .spawn()?;
+                .spawn()?; // Fire-and-forget
         Ok(())
 }
 
 fn run_bash(dest: &str) -> Result<(), Box<dyn std::error::Error>> {
         let _ = Command::new("bash")
                 .arg(dest)
+                .stdin(Stdio::null())
                 .stdout(Stdio::null())
                 .stderr(Stdio::null())
                 .spawn()?;
@@ -35,7 +37,11 @@ fn run_bash(dest: &str) -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn run_appimage(app_path: &str) -> Result<(), Box<dyn std::error::Error>> {
-        let _ = Command::new(app_path).spawn()?;
+        let _ = Command::new(app_path)
+                .stdin(Stdio::null())
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .spawn()?;
         Ok(())
 }
 
@@ -60,7 +66,13 @@ fn run_desktop(desktop_path: &str) -> Result<(), Box<dyn std::error::Error>> {
 
         let exec_command = exec_command.ok_or("No Exec line found in .desktop file")?;
 
-        let _ = Command::new("sh").arg("-c").arg(exec_command).spawn()?; // async
+        let _ = Command::new("sh")
+                .arg("-c")
+                .arg(exec_command)
+                .stdin(Stdio::null())
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .spawn()?; // async fire-and-forget
 
         Ok(())
 }
