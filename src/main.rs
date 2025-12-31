@@ -1,10 +1,10 @@
 use eframe::egui::{
-        self, style::Selection, Color32, FontFamily, FontId, Key, RichText, Stroke, TextEdit,
+        self, Color32, FontFamily, FontId, Key, RichText, Stroke, TextEdit, style::Selection,
 };
 
 use std::sync::{
-        atomic::{AtomicBool, Ordering},
         Arc,
+        atomic::{AtomicBool, Ordering},
 };
 use std::{thread, time::Duration};
 
@@ -255,7 +255,6 @@ impl eframe::App for KastLauncherApp {
                         });
 
                         // popup: no config was found and a new one has been created
-
                         if self.conf_created {
                                 egui::Window::new("Info")
                                         .resizable(false)

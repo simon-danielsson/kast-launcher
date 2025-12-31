@@ -36,10 +36,10 @@
 ## ✨ Features
 + ⌨️ Easy and fast keyboard operation
 + ⚡ Launch .desktop, .sh, .AppImage as well as general bin files all within a cohesive interface.
-+ 🧠 Configure painlessly with `.config/kast/kast.toml`, keeping your config very portable between different machines. A default configuration is created automatically if none is present.
++ 🧠 Configure with `.config/kast/kast.toml`, keeping your settings portable between different machines. A default configuration file is created automatically if none is present.
 
 > [!IMPORTANT]  
-> 'kast' was created exclusively for my own use on a computer running Void Linux with i3. I can't guarantee that this program will run on your computer - for the best results, clone this repo and adjust the source code to you liking!
+> 'kast' was created exclusively for my own use on a computer running Void Linux with the i3 window manager. I can't guarantee that this program will run on your computer - for the best results, clone this repo and compile your own binary!
   
 ---
 <div id="installation"></div>
@@ -47,8 +47,8 @@
 ## 💻 Installation
   
 **0. (Optional) Install a nerdfont**  
-This program relies on the 0xProto Nerd Font for its icons (although the program works just fine without the font of course).  
-[Install this font and set it as your terminal font](https://www.nerdfonts.com/font-downloads)  
+The icons you set up for each program is gonna be devicons (the devicon font for icons is bundled in the binary) and so you should download a nerdfont with devicons, so that you can properly configure your program. Although, this step shouldn't be necessary for you to see icons in the launcher! (Tip: kast also accepts emojis)
+[Install this font if you like](https://www.nerdfonts.com/font-downloads)  
   
 **1. Ensure `~/.local/bin/` exists and is in your shell path**
 ``` bash
@@ -57,7 +57,7 @@ export PATH="$HOME/.local/bin:$PATH" # add this line to your shell config
 source ~/.bashrc   # source ~/.zshrc
 ```
   
-**2. Download and install the latest release of kast**  
+**2. Download and install the latest release of kast, then change permissions**  
 ``` bash
 curl -L -o ~/.local/bin/kast $(curl -s https://api.github.com/repos/simon-danielsson/kast-launcher/releases/latest \
 | grep "browser_download_url.*kast\"" \
@@ -66,19 +66,19 @@ chmod +x ~/.local/bin/kast
 
 ```
   
-**3. If using i3, add this line to your config to be sure the launcher is floating**
+**3. If using i3, add this line to your i3 config to make sure the launcher won't be launched as a tiled window**  
 ``` bash
 for_window [title="kast"] floating enable
 ```
   
-**4. Launch kast for the first time to create a ".kast" config file home directory**  
+**4. Launch kast for the first time to create a config file: `~/.config/kast/kast.toml`**  
 ``` bash
 kast
 ```
   
-**5. Bind kast to a key in your linux config - example: 'i3/config'**
+**5. Bind kast to a key in your linux config**
 ``` bash
-bindsym $mod+space exec kast
+bindsym $mod+space exec kast # i3 config
 ```
 
   
