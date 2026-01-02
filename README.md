@@ -1,14 +1,10 @@
-<!-- <p align="center"> -->
-<!--     <img src="media/logo.png" alt="kast" width="200"/> -->
-<!-- </p> -->
-  
-<h1 align="center">
-  <em>kast</em>
-</h1>
-
 <p align="center">
-  <em>A GUI launcher for launching applications, scripts, <br>
-        and .AppImage files all in the same place.</em>
+    <img src="media/logo/logo.png" alt="kast" width="200"/>
+</p>
+  
+<p align="center">
+  <em>A launcher for applications, scripts and .AppImage files. <br>
+        Built with rust for the i3 window manager.</em>
 </p>
   
 <p align="center">
@@ -27,19 +23,22 @@
 </p>  
   
 <p align="center">
-  <img src="media/screenshots/1.png" alt="screenshot">
+  <img src="media/screenshots/2.png" alt="screenshot">
 </p>
 
 ---
 <div id="features"></div>
 
 ## ✨ Features
-+ ⌨️ Easy and fast keyboard operation
-+ ⚡ Launch .desktop, .sh, .AppImage as well as general bin files all within a cohesive interface.
-+ 🧠 Configure with `.config/kast/kast.toml`, keeping your settings portable between different machines. A default configuration file is created automatically if none is present.
++ ⚡ Launch .desktop, .sh, .AppImage and binary files in a singular interface.
++ 📦 Organize apps into configurable "groups" for dumber and faster searching across hundreds of items.
++ 🎨 Simple (but effective) options for customization such as the font, colors, icons, proportions and more.
++ ⌨️ Intuitive controls and a minimal interface - zero visual distractions.
++ 🧠 Configurable with a toml file, ensuring your settings are easily portable across different machines. 
++ 🖊 A default configuration file is created automatically if none is present at launch.
 
 > [!IMPORTANT]  
-> 'kast' was created exclusively for my own use on a computer running Void Linux with the i3 window manager. I can't guarantee that this program will run on your computer - for the best results, clone this repo and compile your own binary!
+> Kast was created exclusively for my own use, on a computer running Void Linux with the i3 window manager. I can't guarantee that this program will run on your computer - for the best results, clone this repo and compile your own binary. If you're feeling lucky, follow the installation instructions below!
   
 ---
 <div id="installation"></div>
@@ -47,17 +46,22 @@
 ## 💻 Installation
   
 **0. (Optional) Install a nerdfont**  
-The icons you set up for each program is gonna be devicons (the devicon font for icons is bundled in the binary) and so you should download a nerdfont with devicons, so that you can properly configure your program. Although, this step shouldn't be necessary for you to see icons in the launcher! (Tip: kast also accepts emojis)
+The icon you set for each program is gonna be a devicon, and so you should download a nerdfont with devicon support. A fallback nerdfont is bundled in the binary though, and so you don't have to supply your own if you don't want to. (Kast also supports emojis)
 [Install this font if you like](https://www.nerdfonts.com/font-downloads)  
   
-**1. Ensure `~/.local/bin/` exists and is in your shell path**
+**1a. Ensure `~/.local/bin/` exists and is in your shell path**
 ``` bash
 mkdir -p ~/.local/bin
 export PATH="$HOME/.local/bin:$PATH" # add this line to your shell config
 source ~/.bashrc   # source ~/.zshrc
 ```
   
-**2. Download and install the latest release of kast, then change permissions**  
+**1b. Source your shell after the previous step**
+``` bash
+source ~/.bashrc   # or: source ~/.zshrc
+```
+  
+**2. Download and install the latest release of Kast, and give it permissions**  
 ``` bash
 curl -L -o ~/.local/bin/kast $(curl -s https://api.github.com/repos/simon-danielsson/kast-launcher/releases/latest \
 | grep "browser_download_url.*kast\"" \
@@ -71,12 +75,12 @@ chmod +x ~/.local/bin/kast
 for_window [title="kast"] floating enable
 ```
   
-**4. Launch kast for the first time to create a config file: `~/.config/kast/kast.toml`**  
+**4. Launch Kast for the first time to create a config file: `~/.config/kast/kast.toml`**  
 ``` bash
 kast
 ```
   
-**5. Bind kast to a key in your linux config**
+**5. Bind Kast to a key in your linux config**
 ``` bash
 bindsym $mod+space exec kast # i3 config
 ```

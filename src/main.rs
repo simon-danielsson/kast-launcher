@@ -113,7 +113,10 @@ impl KastLauncherApp {
                         self.config
                                 .apps
                                 .iter()
-                                .filter(|app| app.name.to_lowercase().contains(&search_l))
+                                .filter(|app| {
+                                        app.name.to_lowercase().contains(&search_l)
+                                        || app.group.to_lowercase().contains(&search_l)
+                                })
                                 .cloned(),
                 );
         }
@@ -263,6 +266,14 @@ impl eframe::App for KastLauncherApp {
                                                                                         self.config.font.size,
                                                                                         FontFamily::default(),
                                                                                 )));
+                                                                                ui.label(
+                                                                                        RichText::new(&app.group)
+                                                                                                .color(self.colors.text_aux)
+                                                                                                .font(FontId::new(
+                                                                                                        self.config.font.size,
+                                                                                                        FontFamily::default(),
+                                                                                                )),
+                                                                                );
                                                                         },
                                                                 )
                                                         .response;

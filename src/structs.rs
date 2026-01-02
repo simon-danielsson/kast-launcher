@@ -166,6 +166,8 @@ pub struct App {
         pub icon: char,
         #[serde(default)]
         pub path: String,
+        #[serde(default)]
+        pub group: String,
 }
 
 fn default_icon() -> char {
@@ -178,6 +180,7 @@ impl Default for App {
                         name: "x".to_string(),
                         icon: default_icon(),
                         path: "x".to_string(),
+                        group: "".to_string(),
                 }
         }
 }

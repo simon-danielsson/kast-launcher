@@ -1,9 +1,9 @@
 [Font]
 # path = "/home/simon/dotfiles/fonts/.local/share/fonts/arial.ttf"
-size = 12.0
+size = 10.0
 
 [Icons]
-entry = ''
+entry = ''
 # defaults to false if omitted
 entry_icon = true
 
@@ -14,7 +14,7 @@ accent = "#333333"
 background = "#1a1a1a"
 
 [Window]
-width = 300
+width = 250
 height = 250
 # corner radius of ui elements
 # (corners of the windows themselves need
@@ -36,28 +36,34 @@ timeout = 20
 name = "Gimp"
 icon = ''
 path = "gimp"
+group = "image"
 
 [[App]]
 name = "Vial"
 icon = ''
 path = "/home/simon/AppImages/Vial-v0.7.5.AppImage"
-
-[[App]]
-name = "Set timer (30 sec)"
-icon = ''
-path = "/home/simon/dotfiles/scripts/timer-30-sec.sh"
-
-[[App]]
-name = "Firefox"
-icon = ''
-path = "firefox"
-
-[[App]]
-name = "Alacritty"
-icon = ''
-path = "alacritty"
+group = "utility"
 
 [[App]]
 name = "Files"
 icon = ''
 path = "pcmanfm"
+group = "utility"
+
+[[App]]
+name = "Set timer"
+icon = ''
+path = "/path/to/script/set-timer.sh"
+group = "utility"
+
+[[App]]
+name = "Firefox"
+icon = ''
+path = "firefox"
+group = "browser"
+
+[[App]]
+name = "Alacritty"
+icon = ''
+path = "alacritty"
+group = "development"
