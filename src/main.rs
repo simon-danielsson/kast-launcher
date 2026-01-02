@@ -1,12 +1,12 @@
 use eframe::egui::{
         self, Color32, FontFamily, FontId, Key, RichText, Stroke, TextEdit, style::Selection,
 };
-
 use std::sync::{
         Arc,
         atomic::{AtomicBool, Ordering},
 };
 use std::{thread, time::Duration};
+use winit::platform::x11;
 
 pub mod config;
 pub mod constants;
@@ -27,6 +27,8 @@ fn main() {
         let vp_height = conf.window.height;
         let viewport = egui::ViewportBuilder::default()
                 .with_decorations(false)
+                .with_taskbar(false)
+                .with_resizable(false)
                 .with_app_id(APP_NAME)
                 .with_title(APP_NAME.to_owned())
                 .with_movable_by_background(true)
