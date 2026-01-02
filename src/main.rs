@@ -118,18 +118,6 @@ impl KastLauncherApp {
                 );
         }
 
-        // fn update_search(&mut self) {
-        //         let search_l = self.search.to_lowercase();
-        //         self.sorted_apps.clear();
-        //         self.sorted_apps.extend(
-        //                 self.config
-        //                         .apps
-        //                         .iter()
-        //                         .filter(|app| app.name.to_lowercase().contains(&search_l))
-        //                         .cloned(),
-        //         );
-        // }
-
         fn quit(&mut self) {
                 for handle in self.threads.drain(..) {
                         let _ = handle.join();
@@ -151,23 +139,13 @@ impl KastLauncherApp {
                         self.conf_created = false;
                 }
         }
-        // fn timeout_logic(&mut self) {
-        //         let timeout_q = Arc::clone(&self.is_quitting);
-        //         let timeo = self.config.misc.timeout;
-        //         let _ = thread::spawn(move || {
-        //                 thread::sleep(Duration::from_secs(timeo));
-        //                 timeout_q.store(true, Ordering::SeqCst);
-        //         });
-        // }
 }
 
 impl eframe::App for KastLauncherApp {
         fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-                // self.search_loop();
                 self.input(ctx);
-
                 setup_custom_style(ctx, &self.colors);
-                // ==== ui =====
+
                 egui::CentralPanel::default().show(ctx, |ui| {
                         let corner_rad = egui::CornerRadius::same(self.config.window.elem_cnr_rad);
                         let available_width = ui.available_width();
@@ -185,6 +163,7 @@ impl eframe::App for KastLauncherApp {
                                                                 self.config.window.elem_cnr_rad,
                                                                 ui.visuals().selection.bg_fill,
                                                         );
+
                                                         ui.add_space(12.0); // padding for icon
                                                         if self.config.icons.entry_icon {
                                                                 ui.label(
@@ -234,18 +213,22 @@ impl eframe::App for KastLauncherApp {
                                         }
 
                                         if i.key_pressed(egui::Key::Enter) || i.key_pressed(egui::Key::Space) {
-                                                let app = self.sorted_apps[self.selected_index].clone();
-                                                let app_q = Arc::clone(&self.is_quitting);
-                                                let t_launch_app = thread::spawn(move || {
-                                                        launch_app::run(app);
-                                                        app_q.store(true, Ordering::SeqCst);
-                                                });
-                                                self.threads.push(t_launch_app);
+                                                if let Some(app) = self.sorted_apps.get(self.selected_index).cloned() {
+                                                        let app_q = Arc::clone(&self.is_quitting);
+                                                        let t_launch_app = thread::spawn(move || {
+                                                                launch_app::run(app);
+                                                                app_q.store(true, Ordering::SeqCst);
+                                                        });
+                                                        self.threads.push(t_launch_app);
+                                                }
                                         }
                                 });
 
                                 ui.add_space(4.0); // padding between search and list
+
+                                // Scroll area for apps
                                 egui::ScrollArea::vertical()
+                                        .id_salt("apps_scroll_area")
                                         .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden)
                                         .show(ui, |ui| {
                                                 for (idx, app) in self.sorted_apps.iter().enumerate() {
@@ -257,59 +240,67 @@ impl eframe::App for KastLauncherApp {
                                                                 egui::Color32::TRANSPARENT
                                                         };
 
-                                                        let _ = ui.allocate_ui_with_layout(
-                                                                egui::vec2(ui.available_width(), self.config.window.row_height),
-                                                                egui::Layout::left_to_right(egui::Align::Center),
-                                                                |ui| {
-                                                                        ui.painter().rect_filled(
-                                                                                ui.max_rect(),
-                                                                                self.config.window.elem_cnr_rad,
-                                                                                bg_color,
-                                                                        );
+                                                        // each row
+                                                        let row_response = ui
+                                                                .allocate_ui_with_layout(
+                                                                        egui::vec2(ui.available_width(), self.config.window.row_height),
+                                                                        egui::Layout::left_to_right(egui::Align::Center),
+                                                                        |ui| {
+                                                                                ui.painter().rect_filled(
+                                                                                        ui.max_rect(),
+                                                                                        self.config.window.elem_cnr_rad,
+                                                                                        bg_color,
+                                                                                );
 
-                                                                        ui.label(RichText::new(format!(" {}", app.icon)).font(
-                                                                                FontId::new(
-                                                                                        self.config.font.size + 7.0,
-                                                                                        FontFamily::Monospace,
-                                                                                ),
-                                                                        ));
+                                                                                ui.label(RichText::new(format!(" {}", app.icon)).font(
+                                                                                        FontId::new(
+                                                                                                self.config.font.size + 7.0,
+                                                                                                FontFamily::Monospace,
+                                                                                        ),
+                                                                                ));
 
-                                                                        ui.label(RichText::new(&app.name).font(FontId::new(
-                                                                                self.config.font.size,
-                                                                                FontFamily::default(),
-                                                                        )));
-                                                                },
-                                                        );
+                                                                                ui.label(RichText::new(&app.name).font(FontId::new(
+                                                                                        self.config.font.size,
+                                                                                        FontFamily::default(),
+                                                                                )));
+                                                                        },
+                                                                )
+                                                        .response;
+
+                                                        // scroll to selected row
+                                                        if selected {
+                                                                ui.scroll_to_rect(row_response.rect, Some(egui::Align::Center));
+                                                        }
                                                 }
                                         });
                         });
-
-                        // popup: no config was found and a new one has been created
-                        if self.conf_created {
-                                egui::Window::new("Info")
-                                        .resizable(false)
-                                        .title_bar(false)
-                                        .collapsible(false)
-                                        .show(ctx, |ui| {
-                                                ui.vertical_centered(|ui| {
-                                                        ui.label(RichText::new(CONF_NOT_FOUND_ICON).font(FontId::new(
-                                                                self.config.font.size + 15.0,
-                                                                FontFamily::Monospace,
-                                                        )));
-                                                        ui.label(RichText::new(CONF_NOT_FOUND_TEXT).font(FontId::new(
-                                                                self.config.font.size - 2.0,
-                                                                FontFamily::default(),
-                                                        )))
-                                                });
-                                        })
-                        } else {
-                                None
-                        };
-
-                        if self.is_quitting.load(Ordering::SeqCst) {
-                                self.quit()
-                        }
                 });
+
+                // popup: no config was found and a new one has been created
+                if self.conf_created {
+                        egui::Window::new("Info")
+                                .resizable(false)
+                                .title_bar(false)
+                                .collapsible(false)
+                                .show(ctx, |ui| {
+                                        ui.vertical_centered(|ui| {
+                                                ui.label(RichText::new(CONF_NOT_FOUND_ICON).font(FontId::new(
+                                                        self.config.font.size + 15.0,
+                                                        FontFamily::Monospace,
+                                                )));
+                                                ui.label(RichText::new(CONF_NOT_FOUND_TEXT).font(FontId::new(
+                                                        self.config.font.size - 2.0,
+                                                        FontFamily::default(),
+                                                )))
+                                        });
+                                })
+                } else {
+                        None
+                };
+
+                if self.is_quitting.load(Ordering::SeqCst) {
+                        self.quit()
+                }
         }
 }
 
