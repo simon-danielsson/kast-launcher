@@ -53,7 +53,6 @@ The icon you set for each program is gonna be a devicon, and so you should downl
 ``` bash
 mkdir -p ~/.local/bin
 export PATH="$HOME/.local/bin:$PATH" # add this line to your shell config
-source ~/.bashrc   # source ~/.zshrc
 ```
   
 **1b. Source your shell after the previous step**
