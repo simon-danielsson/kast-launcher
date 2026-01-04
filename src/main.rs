@@ -4,7 +4,8 @@ use eframe::egui::{
         FontId, Key, Response, RichText, Stroke, TextEdit,
         style::Selection,
 };
-use egui::Ui;
+
+use egui::{Ui, scroll_area::ScrollBarVisibility::AlwaysHidden};
 use std::sync::{
         Arc,
         atomic::{AtomicBool, Ordering},
@@ -160,6 +161,7 @@ impl KastLauncherApp {
                 ));
                 ui.label(rich_text)
         }
+
         fn add_gen_label(&mut self, ui: &mut Ui, text: &String, color: Color32) -> Response {
                 let rich_text = RichText::new(text)
                         .color(color)
@@ -244,14 +246,15 @@ impl eframe::App for KastLauncherApp {
                                         }
                                 });
 
-                                ui.add_space(4.0); // padding between search and list
+                                // padding between search and list
+                                ui.add_space(4.0);
 
                                 let new_app_l_to_please_the_borrow_checker: Vec<_> =
                                 self.sorted_apps.iter().cloned().collect();
                                 // Scroll area for apps
                                 egui::ScrollArea::vertical()
                                         .id_salt("apps_scroll_area")
-                                        .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden)
+                                        .scroll_bar_visibility(AlwaysHidden)
                                         .show(ui, |ui| {
                                                 for (idx, app) in new_app_l_to_please_the_borrow_checker.iter().enumerate()
                                                 {
