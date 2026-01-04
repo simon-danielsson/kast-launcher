@@ -1,6 +1,10 @@
 use eframe::egui::{
-        self, Color32, FontFamily, FontId, Key, RichText, Stroke, TextEdit, style::Selection,
+        self, Color32,
+        FontFamily::{self, Monospace},
+        FontId, Key, Response, RichText, Stroke, TextEdit,
+        style::Selection,
 };
+use egui::Ui;
 use std::sync::{
         Arc,
         atomic::{AtomicBool, Ordering},
@@ -103,9 +107,9 @@ impl KastLauncherApp {
                         threads: vec![],
                 }
         }
-}
 
-impl KastLauncherApp {
+        // ==== program logic ====
+
         fn search_loop(&mut self) {
                 self.sorted_apps.clear();
                 let search_l = self.search.to_lowercase();
@@ -142,6 +146,26 @@ impl KastLauncherApp {
                         self.conf_created = false;
                 }
         }
+
+        // ==== ui ====
+
+        fn add_icon(&mut self, ui: &mut Ui, icon: char, size_offset: Option<f32>) -> Response {
+                match size_offset {
+                        Some(f) => f,
+                        None => ICON_FONTSIZE_OFFSET,
+                };
+                let rich_text = RichText::new(format!("{}", icon)).font(FontId::new(
+                        self.config.font.size + ICON_FONTSIZE_OFFSET,
+                        Monospace,
+                ));
+                ui.label(rich_text)
+        }
+        fn add_gen_label(&mut self, ui: &mut Ui, text: &String, color: Color32) -> Response {
+                let rich_text = RichText::new(text)
+                        .color(color)
+                        .font(FontId::new(self.config.font.size, FontFamily::default()));
+                ui.label(rich_text)
+        }
 }
 
 impl eframe::App for KastLauncherApp {
@@ -167,16 +191,9 @@ impl eframe::App for KastLauncherApp {
                                                                 ui.visuals().selection.bg_fill,
                                                         );
 
-                                                        ui.add_space(12.0); // padding for icon
+                                                        ui.add_space(12.0);
                                                         if self.config.icons.entry_icon {
-                                                                ui.label(
-                                                                        RichText::new(format!("{}", self.config.icons.entry)).font(
-                                                                                FontId::new(
-                                                                                        self.config.font.size + 7.0,
-                                                                                        FontFamily::Monospace,
-                                                                                ),
-                                                                        ),
-                                                                );
+                                                                self.add_icon(ui, self.config.icons.entry, None);
                                                         }
 
                                                         let field = ui.add(
@@ -229,12 +246,15 @@ impl eframe::App for KastLauncherApp {
 
                                 ui.add_space(4.0); // padding between search and list
 
+                                let new_app_l_to_please_the_borrow_checker: Vec<_> =
+                                self.sorted_apps.iter().cloned().collect();
                                 // Scroll area for apps
                                 egui::ScrollArea::vertical()
                                         .id_salt("apps_scroll_area")
                                         .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden)
                                         .show(ui, |ui| {
-                                                for (idx, app) in self.sorted_apps.iter().enumerate() {
+                                                for (idx, app) in new_app_l_to_please_the_borrow_checker.iter().enumerate()
+                                                {
                                                         let selected = idx == self.selected_index;
 
                                                         let bg_color = if selected {
@@ -254,26 +274,11 @@ impl eframe::App for KastLauncherApp {
                                                                                         self.config.window.elem_cnr_rad,
                                                                                         bg_color,
                                                                                 );
+                                                                                ui.add_space(12.0);
 
-                                                                                ui.label(RichText::new(format!(" {}", app.icon)).font(
-                                                                                        FontId::new(
-                                                                                                self.config.font.size + 7.0,
-                                                                                                FontFamily::Monospace,
-                                                                                        ),
-                                                                                ));
-
-                                                                                ui.label(RichText::new(&app.name).font(FontId::new(
-                                                                                        self.config.font.size,
-                                                                                        FontFamily::default(),
-                                                                                )));
-                                                                                ui.label(
-                                                                                        RichText::new(&app.group)
-                                                                                                .color(self.colors.text_aux)
-                                                                                                .font(FontId::new(
-                                                                                                        self.config.font.size,
-                                                                                                        FontFamily::default(),
-                                                                                                )),
-                                                                                );
+                                                                                self.add_icon(ui, app.icon, None);
+                                                                                self.add_gen_label(ui, &app.name, self.colors.text);
+                                                                                self.add_gen_label(ui, &app.group, self.colors.text_aux)
                                                                         },
                                                                 )
                                                         .response;
@@ -295,14 +300,8 @@ impl eframe::App for KastLauncherApp {
                                 .collapsible(false)
                                 .show(ctx, |ui| {
                                         ui.vertical_centered(|ui| {
-                                                ui.label(RichText::new(CONF_NOT_FOUND_ICON).font(FontId::new(
-                                                        self.config.font.size + 15.0,
-                                                        FontFamily::Monospace,
-                                                )));
-                                                ui.label(RichText::new(CONF_NOT_FOUND_TEXT).font(FontId::new(
-                                                        self.config.font.size - 2.0,
-                                                        FontFamily::default(),
-                                                )))
+                                                self.add_icon(ui, CONF_NOT_FOUND_ICON, Some(15.0));
+                                                self.add_gen_label(ui, &CONF_NOT_FOUND_TEXT.to_string(), self.colors.text);
                                         });
                                 })
                 } else {
